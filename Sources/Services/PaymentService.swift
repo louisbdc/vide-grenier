@@ -23,7 +23,8 @@ final class PaymentService: NSObject {
             let session = ASWebAuthenticationSession(
                 url: checkoutURL,
                 callbackURLScheme: "videgrenier"
-            ) { callbackURL, error in
+            ) { [weak self] callbackURL, error in
+                self?.session = nil   // libère la session après usage
                 if callbackURL?.host == "done" {
                     continuation.resume(returning: .returned)
                 } else if let error = error as? ASWebAuthenticationSessionError,
@@ -34,7 +35,9 @@ final class PaymentService: NSObject {
                 }
             }
             session.presentationContextProvider = self
-            session.prefersEphemeralWebBrowserSession = false
+            // Éphémère : pas de partage de cookies ni d'alerte de consentement
+            // (ce n'est pas un SSO mais un paiement web ponctuel).
+            session.prefersEphemeralWebBrowserSession = true
             self.session = session
             session.start()
         }

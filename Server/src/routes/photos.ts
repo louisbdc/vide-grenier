@@ -24,13 +24,18 @@ export default async function photoRoutes(fastify: FastifyInstance): Promise<voi
     if (!uid) return reply.code(401).send({ error: "Authentification requise" });
     const { id } = request.params as { id: string };
 
+    // L'événement doit exister (pas de doc/photo orpheline).
+    const exists = await collections().events.findOne({ extId: id }, { projection: { _id: 1 } });
+    if (!exists) return reply.code(404).send({ error: "Événement introuvable" });
+
     const data = await request.file();
     if (!data || !data.mimetype.startsWith("image/")) {
       return reply.code(400).send({ error: "Image requise" });
     }
 
     await mkdir(config.photosDir, { recursive: true });
-    const file = `${id}_${randomUUID()}.jpg`;
+    // Nom de fichier = UUID seul : aucune donnée issue du client (anti path traversal).
+    const file = `${randomUUID()}.jpg`;
     await writeFile(join(config.photosDir, file), await data.toBuffer());
     const url = `/photos/${file}`;
 

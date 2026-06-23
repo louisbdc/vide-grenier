@@ -21,10 +21,25 @@ final class AppSession: ObservableObject {
     func start() async {
         do {
             uid = try await auth.ensureSignedIn()
+            await retryPendingPublish()
         } catch let error as AppError {
             startupError = error
         } catch {
             startupError = .unknown
+        }
+    }
+
+    /// Republie une annonce payée dont la publication avait échoué (sans re-payer).
+    private func retryPendingPublish() async {
+        guard let pending = PendingPublishStore.load() else { return }
+        do {
+            _ = try await EventCreationService().publish(pending)
+            PendingPublishStore.clear()
+        } catch AppError.alreadyPublished, AppError.paymentRequired {
+            // Déjà publiée, ou session non réellement payée : on n'insiste pas.
+            PendingPublishStore.clear()
+        } catch {
+            // Échec réseau : on conserve pour retenter au prochain lancement.
         }
     }
 

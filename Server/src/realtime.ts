@@ -30,9 +30,14 @@ export function addSubscriber(socket: WebSocket): void {
     try {
       const msg = JSON.parse(raw.toString());
       if (msg.type === "subscribe") {
-        sub.lat = Number(msg.lat);
-        sub.lng = Number(msg.lng);
-        sub.radiusM = Number(msg.radiusM ?? msg.radius ?? 15000);
+        const lat = Number(msg.lat);
+        const lng = Number(msg.lng);
+        const radiusM = Number(msg.radiusM ?? msg.radius ?? 15000);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng) || !Number.isFinite(radiusM)) return;
+        if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
+        sub.lat = lat;
+        sub.lng = lng;
+        sub.radiusM = Math.min(Math.max(radiusM, 0), 200_000); // borne à 200 km
       }
     } catch {
       // message ignoré
@@ -66,5 +71,11 @@ export function watchEvents(): void {
       && "fullDocument" in change && change.fullDocument) {
       broadcast(change.fullDocument as EventDoc);
     }
+  });
+  // Sans ce handler, une erreur (réélection du replica set, coupure) tuerait le
+  // flux temps réel — voire le process. On relance après un court délai.
+  stream.on("error", () => {
+    stream.close().catch(() => {});
+    setTimeout(watchEvents, 3000);
   });
 }

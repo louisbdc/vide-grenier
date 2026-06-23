@@ -86,7 +86,8 @@ actor APIClient {
             guard let http = response as? HTTPURLResponse else { throw AppError.network("réponse") }
             guard (200..<300).contains(http.statusCode) else {
                 if http.statusCode == 401 { throw AppError.notAuthenticated }
-                if http.statusCode == 402 || http.statusCode == 409 { throw AppError.paymentFailed }
+                if http.statusCode == 402 { throw AppError.paymentRequired }
+                if http.statusCode == 409 { throw AppError.alreadyPublished }
                 throw AppError.network("HTTP \(http.statusCode)")
             }
             if T.self == EmptyResponse.self { return EmptyResponse() as! T }

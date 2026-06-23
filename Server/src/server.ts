@@ -16,7 +16,16 @@ import contributionRoutes from "./routes/contributions.js";
 import photoRoutes from "./routes/photos.js";
 import paymentRoutes from "./routes/payments.js";
 
+/// Refuse de démarrer sans secret JWT sûr : sinon n'importe qui pourrait forger
+/// un jeton et se faire passer pour un autre utilisateur.
+function assertConfig(): void {
+  if (!config.jwtSecret || config.jwtSecret.length < 16) {
+    throw new Error("JWT_SECRET manquant ou trop court (>= 16 caractères requis).");
+  }
+}
+
 async function main(): Promise<void> {
+  assertConfig();
   await connect();
 
   const app = Fastify({ logger: true });

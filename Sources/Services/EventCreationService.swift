@@ -14,35 +14,34 @@ struct ListingCheckout: Decodable {
 /// Le serveur calcule la géolocalisation et vérifie le paiement.
 @MainActor
 struct EventCreationService {
-    private static let isoFormatter = ISO8601DateFormatter()
+    private static let isoFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
 
     /// Crée la Checkout Session de 5 € pour la publication.
     func createCheckout() async throws -> ListingCheckout {
         try await APIClient.shared.post("events/checkout", body: [:])
     }
 
-    /// Publie l'annonce une fois le paiement réglé (session vérifiée serveur).
-    func create(name: String,
-                kind: SaleEventKind,
-                startsAt: Date,
-                endsAt: Date?,
-                latitude: Double,
-                longitude: Double,
-                address: String?,
-                checkoutSessionId: String,
-                uid: String) async throws -> String {
+    /// Publie une annonce déjà payée (session vérifiée serveur). Idempotent :
+    /// utilisé aussi pour retenter une publication en attente sans re-payer.
+    @discardableResult
+    func publish(_ pending: PendingPublish) async throws -> String {
         var body: [String: Any] = [
-            "name": name,
-            "kind": kind.rawValue,
-            "latitude": latitude,
-            "longitude": longitude,
-            "startsAt": Self.isoFormatter.string(from: startsAt),
-            "checkoutSessionId": checkoutSessionId,
+            "name": pending.name,
+            "kind": pending.kind,
+            "latitude": pending.latitude,
+            "longitude": pending.longitude,
+            "startsAt": Self.isoFormatter.string(from: pending.startsAt),
+            "checkoutSessionId": pending.checkoutSessionId,
         ]
-        if let endsAt { body["endsAt"] = Self.isoFormatter.string(from: endsAt) }
-        if let address { body["address"] = address }
-
+        if let endsAt = pending.endsAt {
+            body["endsAt"] = Self.isoFormatter.string(from: endsAt)
+        }
         let created: CreatedEvent = try await APIClient.shared.post("events", body: body)
         return created.id
     }
+
 }

@@ -47,6 +47,22 @@ async function ensureIndexes(): Promise<void> {
   await c.signals.createIndex({ createdAt: 1 }, { expireAfterSeconds: 6 * 3600 });
   await c.tags.createIndex({ eventId: 1 });
   await c.photos.createIndex({ eventId: 1 });
+  // Un seul signal/tag par utilisateur et par type/label (déduplication).
+  // Tolérant : si d'anciens doublons existent, on n'empêche pas le démarrage
+  // (l'upsert applicatif déduplique déjà à l'écriture).
+  await tryUniqueIndex(c.signals, { eventId: 1, uid: 1, type: 1 });
+  await tryUniqueIndex(c.tags, { eventId: 1, uid: 1, label: 1 });
+}
+
+async function tryUniqueIndex(
+  collection: Collection<SignalDoc> | Collection<TagDoc>,
+  keys: Record<string, 1>,
+): Promise<void> {
+  try {
+    await collection.createIndex(keys as never, { unique: true });
+  } catch (error) {
+    console.warn("Index unique non créé (doublons existants ?) :", (error as Error).message);
+  }
 }
 
 export async function close(): Promise<void> {

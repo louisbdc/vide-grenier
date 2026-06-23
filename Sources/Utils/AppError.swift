@@ -8,6 +8,8 @@ enum AppError: LocalizedError, Equatable {
     case decoding(String)
     case photoProcessingFailed
     case paymentFailed
+    case paymentRequired
+    case alreadyPublished
     case unknown
 
     var errorDescription: String? {
@@ -24,6 +26,10 @@ enum AppError: LocalizedError, Equatable {
             return "Le traitement de confidentialité de la photo a échoué."
         case .paymentFailed:
             return "Le paiement n'a pas abouti. Aucune annonce n'a été publiée."
+        case .paymentRequired:
+            return "Le paiement n'a pas été confirmé. Réessaie la publication."
+        case .alreadyPublished:
+            return "Cette annonce a déjà été publiée."
         case .unknown:
             return "Une erreur inattendue est survenue."
         }

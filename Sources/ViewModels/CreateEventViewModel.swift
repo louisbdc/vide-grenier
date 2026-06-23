@@ -45,20 +45,28 @@ final class CreateEventViewModel: ObservableObject {
                 break                      // paiement vérifié côté serveur ci-dessous
             }
 
-            // Le serveur vérifie que la session est réellement payée avant de publier.
-            _ = try await service.create(
+            // On persiste l'annonce payée AVANT de publier : si la publication
+            // échoue (réseau), on la retentera au prochain lancement sans re-payer.
+            let pending = PendingPublish(
+                checkoutSessionId: checkout.sessionId,
                 name: name.trimmingCharacters(in: .whitespacesAndNewlines),
-                kind: kind,
+                kind: kind.rawValue,
                 startsAt: startsAt,
                 endsAt: hasEnd ? endsAt : nil,
                 latitude: center.latitude,
-                longitude: center.longitude,
-                address: nil,
-                checkoutSessionId: checkout.sessionId,
-                uid: uid
+                longitude: center.longitude
             )
+            PendingPublishStore.save(pending)
+
+            do {
+                _ = try await service.publish(pending)
+            } catch AppError.alreadyPublished {
+                // Déjà créée (idempotent) : c'est un succès.
+            }
+            PendingPublishStore.clear()
             return true
         } catch let appError as AppError {
+            // Le paiement est sauvegardé : il sera retenté au prochain lancement.
             error = appError
             return false
         } catch {

@@ -29,10 +29,13 @@ export default async function eventRoutes(fastify: FastifyInstance): Promise<voi
     const q = request.query as Record<string, string>;
     const lat = Number(q.lat);
     const lng = Number(q.lng);
-    const radiusKm = Number(q.radius ?? 15);
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-      return reply.code(400).send({ error: "lat et lng requis" });
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)
+      || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      return reply.code(400).send({ error: "lat/lng invalides" });
     }
+    // Rayon borné : évite un $maxDistance négatif (erreur Mongo) ou un scan énorme.
+    const rawRadius = Number(q.radius ?? 15);
+    const radiusKm = Number.isFinite(rawRadius) ? Math.min(Math.max(rawRadius, 1), 200) : 15;
 
     const cutoff = new Date(Date.now() - 24 * 3600 * 1000);
     const docs = await collections().events
@@ -64,8 +67,13 @@ export default async function eventRoutes(fastify: FastifyInstance): Promise<voi
     const startsAt = b.startsAt ? new Date(String(b.startsAt)) : null;
     const checkoutSessionId = String(b.checkoutSessionId ?? "");
 
-    if (!name || !KINDS.includes(kind) || !Number.isFinite(latitude)
-      || !Number.isFinite(longitude) || !startsAt || Number.isNaN(startsAt.getTime())) {
+    const endsAt = b.endsAt ? new Date(String(b.endsAt)) : null;
+    if (!name || name.length > 120 || !KINDS.includes(kind)
+      || !Number.isFinite(latitude) || latitude < -90 || latitude > 90
+      || !Number.isFinite(longitude) || longitude < -180 || longitude > 180
+      || !startsAt || Number.isNaN(startsAt.getTime())
+      || (endsAt && (Number.isNaN(endsAt.getTime()) || endsAt < startsAt))
+      || (b.address != null && String(b.address).length > 200)) {
       return reply.code(400).send({ error: "Champs invalides" });
     }
 
@@ -80,7 +88,7 @@ export default async function eventRoutes(fastify: FastifyInstance): Promise<voi
       kind,
       location: { type: "Point", coordinates: [longitude, latitude] },
       startsAt,
-      endsAt: b.endsAt ? new Date(String(b.endsAt)) : null,
+      endsAt,
       address: b.address ? String(b.address) : null,
       recurrenceDays: [],
       source: "crowdsourced",

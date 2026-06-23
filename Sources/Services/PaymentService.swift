@@ -1,47 +1,53 @@
 import Foundation
 import UIKit
-import StripePaymentSheet
+import AuthenticationServices
 
-/// Résultat d'un paiement via le Payment Sheet Stripe.
+/// Résultat de l'ouverture de la page de paiement Stripe Checkout.
 enum PaymentOutcome {
-    case success
+    case returned   // l'utilisateur est revenu (paiement à vérifier côté serveur)
     case canceled
     case failed
 }
 
-/// Présente le Payment Sheet Stripe (carte / moyens dynamiques configurés au
-/// Dashboard) pour régler la publication d'une annonce.
+/// Ouvre la page Stripe Checkout dans une session web native
+/// (`ASWebAuthenticationSession`) — aucun SDK tiers. Après paiement, la page de
+/// retour redirige vers `videgrenier://done`, ce qui referme la session.
+/// Le paiement est ensuite **vérifié côté serveur** (source de vérité).
 @MainActor
-enum PaymentService {
-    static func payListing(clientSecret: String, publishableKey: String) async -> PaymentOutcome {
-        STPAPIClient.shared.publishableKey = publishableKey
+final class PaymentService: NSObject {
+    private var session: ASWebAuthenticationSession?
 
-        var configuration = PaymentSheet.Configuration()
-        configuration.merchantDisplayName = "Vide-Grenier"
-
-        let sheet = PaymentSheet(paymentIntentClientSecret: clientSecret, configuration: configuration)
-        guard let presenter = topViewController() else { return .failed }
-
+    func openCheckout(url: String) async -> PaymentOutcome {
+        guard let checkoutURL = URL(string: url) else { return .failed }
         return await withCheckedContinuation { continuation in
-            sheet.present(from: presenter) { result in
-                _ = sheet // retient le sheet jusqu'à la complétion
-                switch result {
-                case .completed: continuation.resume(returning: .success)
-                case .canceled: continuation.resume(returning: .canceled)
-                case .failed: continuation.resume(returning: .failed)
+            let session = ASWebAuthenticationSession(
+                url: checkoutURL,
+                callbackURLScheme: "videgrenier"
+            ) { callbackURL, error in
+                if callbackURL?.host == "done" {
+                    continuation.resume(returning: .returned)
+                } else if let error = error as? ASWebAuthenticationSessionError,
+                          error.code == .canceledLogin {
+                    continuation.resume(returning: .canceled)
+                } else {
+                    continuation.resume(returning: error == nil ? .returned : .failed)
                 }
             }
+            session.presentationContextProvider = self
+            session.prefersEphemeralWebBrowserSession = false
+            self.session = session
+            session.start()
         }
     }
+}
 
-    private static func topViewController() -> UIViewController? {
-        let root = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .flatMap { $0.windows }
-            .first { $0.isKeyWindow }?
-            .rootViewController
-        var top = root
-        while let presented = top?.presentedViewController { top = presented }
-        return top
+extension PaymentService: ASWebAuthenticationPresentationContextProviding {
+    nonisolated func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        MainActor.assumeIsolated {
+            let scene = UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .first { $0.activationState == .foregroundActive }
+            return scene?.keyWindow ?? ASPresentationAnchor()
+        }
     }
 }

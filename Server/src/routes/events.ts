@@ -7,15 +7,15 @@ import { EventDoc, EventKind } from "../types.js";
 import { config } from "../config.js";
 import { stripe } from "../stripe.js";
 
-/// Vérifie qu'un PaymentIntent correspond bien à un paiement d'annonce valide,
-/// réglé par l'utilisateur courant (montant et devise attendus).
-async function assertPaidListing(paymentIntentId: string, uid: string): Promise<boolean> {
+/// Vérifie qu'une Checkout Session correspond bien à un paiement d'annonce
+/// réglé (payment_status=paid) par l'utilisateur courant, au bon montant.
+async function assertPaidListing(sessionId: string, uid: string): Promise<boolean> {
   try {
-    const intent = await stripe().paymentIntents.retrieve(paymentIntentId);
-    return intent.status === "succeeded"
-      && intent.amount === config.listingPriceCents
-      && intent.currency === config.listingCurrency
-      && intent.metadata?.uid === uid;
+    const session = await stripe().checkout.sessions.retrieve(sessionId);
+    return session.payment_status === "paid"
+      && session.amount_total === config.listingPriceCents
+      && session.currency === config.listingCurrency
+      && session.metadata?.uid === uid;
   } catch {
     return false;
   }
@@ -62,7 +62,7 @@ export default async function eventRoutes(fastify: FastifyInstance): Promise<voi
     const latitude = Number(b.latitude);
     const longitude = Number(b.longitude);
     const startsAt = b.startsAt ? new Date(String(b.startsAt)) : null;
-    const paymentIntentId = String(b.paymentIntentId ?? "");
+    const checkoutSessionId = String(b.checkoutSessionId ?? "");
 
     if (!name || !KINDS.includes(kind) || !Number.isFinite(latitude)
       || !Number.isFinite(longitude) || !startsAt || Number.isNaN(startsAt.getTime())) {
@@ -70,7 +70,7 @@ export default async function eventRoutes(fastify: FastifyInstance): Promise<voi
     }
 
     // Publier une annonce coûte 5 € : on exige un paiement Stripe validé.
-    if (!paymentIntentId || !(await assertPaidListing(paymentIntentId, uid))) {
+    if (!checkoutSessionId || !(await assertPaidListing(checkoutSessionId, uid))) {
       return reply.code(402).send({ error: "Paiement requis ou non validé" });
     }
 
@@ -89,12 +89,12 @@ export default async function eventRoutes(fastify: FastifyInstance): Promise<voi
       topTags: [],
       photoCount: 0,
       updatedAt: new Date(),
-      paymentIntentId,
+      checkoutSessionId,
     };
     try {
       await collections().events.insertOne(doc);
     } catch (error) {
-      // Violation d'unicité = PaymentIntent déjà utilisé pour une autre annonce.
+      // Violation d'unicité = session de paiement déjà utilisée pour une annonce.
       if ((error as { code?: number }).code === 11000) {
         return reply.code(409).send({ error: "Paiement déjà utilisé" });
       }

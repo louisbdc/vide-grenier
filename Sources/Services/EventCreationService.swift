@@ -4,24 +4,24 @@ private struct CreatedEvent: Decodable {
     let id: String
 }
 
-/// Réponse de `POST /events/intent` : de quoi présenter le Payment Sheet Stripe.
-struct ListingPaymentIntent: Decodable {
-    let clientSecret: String
-    let publishableKey: String
+/// Réponse de `POST /events/checkout` : URL de la page Stripe + id de session.
+struct ListingCheckout: Decodable {
+    let url: String
+    let sessionId: String
 }
 
-/// Création d'un événement crowdsourcé (payant : 5 € via Stripe).
+/// Création d'un événement crowdsourcé (payant : 5 € via Stripe Checkout).
 /// Le serveur calcule la géolocalisation et vérifie le paiement.
 @MainActor
 struct EventCreationService {
     private static let isoFormatter = ISO8601DateFormatter()
 
-    /// Crée le PaymentIntent de 5 € pour la publication.
-    func createIntent() async throws -> ListingPaymentIntent {
-        try await APIClient.shared.post("events/intent", body: [:])
+    /// Crée la Checkout Session de 5 € pour la publication.
+    func createCheckout() async throws -> ListingCheckout {
+        try await APIClient.shared.post("events/checkout", body: [:])
     }
 
-    /// Publie l'annonce une fois le paiement réglé (paymentIntentId vérifié serveur).
+    /// Publie l'annonce une fois le paiement réglé (session vérifiée serveur).
     func create(name: String,
                 kind: SaleEventKind,
                 startsAt: Date,
@@ -29,7 +29,7 @@ struct EventCreationService {
                 latitude: Double,
                 longitude: Double,
                 address: String?,
-                paymentIntentId: String,
+                checkoutSessionId: String,
                 uid: String) async throws -> String {
         var body: [String: Any] = [
             "name": name,
@@ -37,7 +37,7 @@ struct EventCreationService {
             "latitude": latitude,
             "longitude": longitude,
             "startsAt": Self.isoFormatter.string(from: startsAt),
-            "paymentIntentId": paymentIntentId,
+            "checkoutSessionId": checkoutSessionId,
         ]
         if let endsAt { body["endsAt"] = Self.isoFormatter.string(from: endsAt) }
         if let address { body["address"] = address }

@@ -32,6 +32,17 @@
 	<string>Pour prendre des photos des stands. Les visages et plaques d'immatriculation sont automatiquement floutés sur votre téléphone avant tout envoi.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Pour enregistrer vos photos de chine.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.vide-grenier.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>videgrenier</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<!-- Autorise HTTP/WS vers le réseau local (dev). En prod, utiliser HTTPS. -->

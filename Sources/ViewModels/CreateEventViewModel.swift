@@ -13,6 +13,7 @@ final class CreateEventViewModel: ObservableObject {
     @Published private(set) var error: AppError?
 
     private let service = EventCreationService()
+    private let payment = PaymentService()
 
     /// Nom non vide et fin (si activée) postérieure au début.
     var isValid: Bool {
@@ -32,22 +33,19 @@ final class CreateEventViewModel: ObservableObject {
         error = nil
         defer { isSaving = false }
         do {
-            let intent = try await service.createIntent()
-            let outcome = await PaymentService.payListing(
-                clientSecret: intent.clientSecret,
-                publishableKey: intent.publishableKey
-            )
+            let checkout = try await service.createCheckout()
+            let outcome = await payment.openCheckout(url: checkout.url)
             switch outcome {
             case .canceled:
                 return false               // annulation : pas d'erreur affichée
             case .failed:
                 error = .paymentFailed
                 return false
-            case .success:
-                break
+            case .returned:
+                break                      // paiement vérifié côté serveur ci-dessous
             }
 
-            let paymentIntentId = String(intent.clientSecret.components(separatedBy: "_secret_").first ?? "")
+            // Le serveur vérifie que la session est réellement payée avant de publier.
             _ = try await service.create(
                 name: name.trimmingCharacters(in: .whitespacesAndNewlines),
                 kind: kind,
@@ -56,7 +54,7 @@ final class CreateEventViewModel: ObservableObject {
                 latitude: center.latitude,
                 longitude: center.longitude,
                 address: nil,
-                paymentIntentId: paymentIntentId,
+                checkoutSessionId: checkout.sessionId,
                 uid: uid
             )
             return true

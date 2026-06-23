@@ -18,6 +18,8 @@ export const config = {
   stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY ?? "",
   listingPriceCents: 500,
   listingCurrency: "eur",
+  // URL publique du backend (pour les redirections Stripe Checkout).
+  publicUrl: process.env.PUBLIC_URL ?? "https://vps-03f913ed.vps.ovh.net",
   get jwtSecretChecked() {
     return required("JWT_SECRET");
   },

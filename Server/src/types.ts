@@ -32,8 +32,8 @@ export interface EventDoc {
   topTags: string[];
   photoCount: number;
   updatedAt: Date;
-  // PaymentIntent Stripe ayant payé la publication (annonces crowdsourcées).
-  paymentIntentId?: string;
+  // Checkout Session Stripe ayant payé la publication (annonces crowdsourcées).
+  checkoutSessionId?: string;
 }
 
 export interface SignalDoc {

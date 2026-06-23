@@ -41,8 +41,8 @@ async function ensureIndexes(): Promise<void> {
   await c.events.createIndex({ location: "2dsphere" });
   await c.events.createIndex({ extId: 1 }, { unique: true });
   await c.events.createIndex({ endsAt: 1 });
-  // Un PaymentIntent ne peut financer qu'une seule annonce (anti-réutilisation).
-  await c.events.createIndex({ paymentIntentId: 1 }, { unique: true, sparse: true });
+  // Une session de paiement ne peut financer qu'une seule annonce.
+  await c.events.createIndex({ checkoutSessionId: 1 }, { unique: true, sparse: true });
   await c.signals.createIndex({ eventId: 1 });
   await c.signals.createIndex({ createdAt: 1 }, { expireAfterSeconds: 6 * 3600 });
   await c.tags.createIndex({ eventId: 1 });

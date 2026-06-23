@@ -15,6 +15,7 @@ import eventRoutes from "./routes/events.js";
 import contributionRoutes from "./routes/contributions.js";
 import photoRoutes from "./routes/photos.js";
 import paymentRoutes from "./routes/payments.js";
+import legalRoutes from "./routes/legal.js";
 
 /// Refuse de démarrer sans secret JWT sûr : sinon n'importe qui pourrait forger
 /// un jeton et se faire passer pour un autre utilisateur.
@@ -42,6 +43,7 @@ async function main(): Promise<void> {
   await app.register(contributionRoutes);
   await app.register(photoRoutes);
   await app.register(paymentRoutes);
+  await app.register(legalRoutes);
 
   // Canal temps réel : l'app s'abonne à une zone et reçoit les mises à jour.
   app.register(async (instance) => {

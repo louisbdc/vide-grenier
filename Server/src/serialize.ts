@@ -15,6 +15,7 @@ export interface EventJSON {
   liveStatus: string;
   topTags: string[];
   photoCount: number;
+  authorId: string | null;   // pour le blocage côté client (null = open data)
 }
 
 export function serializeEvent(doc: EventDoc): EventJSON {
@@ -33,5 +34,6 @@ export function serializeEvent(doc: EventDoc): EventJSON {
     liveStatus: doc.liveStatus,
     topTags: doc.topTags,
     photoCount: doc.photoCount,
+    authorId: doc.ownerUid,
   };
 }

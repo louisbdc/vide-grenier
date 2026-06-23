@@ -206,6 +206,14 @@ struct EventDetailSheet: View {
                     }
                     .frame(width: 150, height: 150)
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .contextMenu {
+                        Button(role: .destructive) {
+                            Task { await viewModel.report(photo: photo, eventId: event.id) }
+                        } label: { Label("Signaler cette photo", systemImage: "flag") }
+                        Button(role: .destructive) {
+                            Task { await viewModel.block(authorId: photo.authorId, eventId: event.id) }
+                        } label: { Label("Bloquer cet utilisateur", systemImage: "hand.raised") }
+                    }
                 }
             }
         }

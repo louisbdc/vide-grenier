@@ -44,6 +44,7 @@ struct SaleEvent: Identifiable, Decodable, Equatable, Sendable {
     let liveStatus: EventLiveStatus
     let topTags: [InventoryTag]
     let photoCount: Int
+    let authorId: String?
 
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
@@ -51,7 +52,7 @@ struct SaleEvent: Identifiable, Decodable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case id, name, kind, latitude, longitude, startsAt, endsAt
-        case address, recurrenceDays, source, liveStatus, topTags, photoCount
+        case address, recurrenceDays, source, liveStatus, topTags, photoCount, authorId
     }
 
     init(from decoder: Decoder) throws {
@@ -70,5 +71,6 @@ struct SaleEvent: Identifiable, Decodable, Equatable, Sendable {
         let tagStrings = (try? c.decode([String].self, forKey: .topTags)) ?? []
         topTags = tagStrings.compactMap(InventoryTag.init(rawValue:))
         photoCount = (try? c.decode(Int.self, forKey: .photoCount)) ?? 0
+        authorId = try? c.decodeIfPresent(String.self, forKey: .authorId)
     }
 }

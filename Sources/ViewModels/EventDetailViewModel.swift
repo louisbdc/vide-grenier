@@ -18,6 +18,20 @@ final class EventDetailViewModel: ObservableObject {
         gallery = (try? await photoRepository.fetch(eventId: eventId)) ?? []
     }
 
+    /// Signale une photo inappropriée (modération UGC).
+    func report(photo: EventPhoto, eventId: String) async {
+        try? await photoRepository.report(photoId: photo.id)
+        confirmation = "Merci, la photo a été signalée."
+        await loadPhotos(eventId: eventId)
+    }
+
+    /// Bloque l'auteur d'une photo : ses contenus sont masqués sur l'appareil.
+    func block(authorId: String, eventId: String) async {
+        BlockStore.block(authorId)
+        confirmation = "Utilisateur bloqué."
+        await loadPhotos(eventId: eventId)
+    }
+
     func submitSignal(_ type: SignalType, eventId: String, uid: String?) async {
         guard let uid else { error = .notAuthenticated; return }
         await run(confirmation: "Merci ! Signalement « \(type.label) » envoyé.") {

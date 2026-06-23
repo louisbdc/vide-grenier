@@ -47,6 +47,7 @@ async function ensureIndexes(): Promise<void> {
   await c.signals.createIndex({ createdAt: 1 }, { expireAfterSeconds: 6 * 3600 });
   await c.tags.createIndex({ eventId: 1 });
   await c.photos.createIndex({ eventId: 1 });
+  await c.photos.createIndex({ id: 1 }, { unique: true, sparse: true });
   // Un seul signal/tag par utilisateur et par type/label (déduplication).
   // Tolérant : si d'anciens doublons existent, on n'empêche pas le démarrage
   // (l'upsert applicatif déduplique déjà à l'écriture).

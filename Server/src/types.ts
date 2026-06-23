@@ -51,9 +51,12 @@ export interface TagDoc {
 }
 
 export interface PhotoDoc {
+  id: string;            // identifiant public (pour signalement)
   eventId: string;
   file: string;          // nom de fichier sur disque
   url: string;
-  uid: string;
+  uid: string;           // auteur (anonyme) — permet le blocage côté client
   createdAt: Date;
+  reporters: string[];   // uids ayant signalé (dédupliqué)
+  hidden: boolean;       // masqué après seuil de signalements
 }

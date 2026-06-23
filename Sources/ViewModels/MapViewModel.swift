@@ -25,6 +25,7 @@ final class MapViewModel: ObservableObject {
     var visibleEvents: [SaleEvent] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         return events.filter { event in
+            guard !BlockStore.isBlocked(event.authorId) else { return false }
             guard selectedKinds.contains(event.kind) else { return false }
             guard !query.isEmpty else { return true }
             // localizedStandardContains : insensible à la casse et aux accents.

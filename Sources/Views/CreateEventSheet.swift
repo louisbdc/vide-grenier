@@ -52,6 +52,19 @@ struct CreateEventSheet: View {
                     Label(error.localizedDescription, systemImage: "exclamationmark.triangle.fill")
                         .foregroundStyle(Theme.terracotta).font(.footnote)
                 }
+
+                Section {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("En publiant, tu acceptes les conditions d'utilisation (tolérance zéro pour les contenus inappropriés).")
+                            .font(.caption).foregroundStyle(Theme.ink.opacity(0.6))
+                        HStack(spacing: 14) {
+                            Link("Conditions", destination: URL(string: "https://vps-03f913ed.vps.ovh.net/terms")!)
+                            Link("Confidentialité", destination: URL(string: "https://vps-03f913ed.vps.ovh.net/privacy")!)
+                        }
+                        .font(.caption.weight(.semibold))
+                    }
+                }
+                .listRowBackground(Color.clear)
             }
             .scrollContentBackground(.hidden)
             .background(Theme.paper)

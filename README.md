@@ -52,8 +52,9 @@ brew install xcodegen
 xcodegen generate
 open VideGrenier.xcodeproj   # cible iOS 26, simulateur iPhone 17 Pro
 ```
-Pour viser le backend local depuis le simulateur :
-`API_BASE_URL=http://127.0.0.1:8080` (défaut). En prod : l'URL HTTPS du VPS.
+Par défaut, l'app vise la **production** (`https://vps-03f913ed.vps.ovh.net`).
+Pour viser un backend **local** en dev, définis la variable d'environnement du
+schéma Xcode : `API_BASE_URL=http://127.0.0.1:8080`.
 
 ## Déploiement
 

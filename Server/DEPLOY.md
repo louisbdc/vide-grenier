@@ -119,7 +119,8 @@ Dans Xcode (réglage de build / variable d'environnement du schéma) :
 API_BASE_URL = https://vps-03f913ed.vps.ovh.net
 ```
 
-(En l'absence de cette variable, l'app vise `http://127.0.0.1:8080` pour le dev.)
+(L'app vise la production par défaut ; ne définis `API_BASE_URL` que pour pointer
+un backend local en dev, ex. `http://127.0.0.1:8080`.)
 L'URL étant en HTTPS, l'exception `NSAllowsLocalNetworking` de l'Info.plist ne
 sert qu'au dev local — ne pas relâcher davantage l'ATS en production.
 

@@ -1,13 +1,12 @@
 import Foundation
 
-/// Adresse du backend. Surchargée par la variable d'environnement
-/// `API_BASE_URL` (pratique en simulateur / CI), sinon localhost en dev.
-///
-/// En production, mets l'URL HTTPS de ton VPS (ex: https://api.tondomaine.fr).
+/// Adresse du backend. Par défaut : la **production** (VPS OVH, HTTPS).
+/// Surchargée par la variable d'environnement `API_BASE_URL` pour le dev local
+/// (ex: `API_BASE_URL=http://127.0.0.1:8080`).
 enum APIConfig {
     static var baseURL: URL {
         let raw = ProcessInfo.processInfo.environment["API_BASE_URL"]
-            ?? "http://127.0.0.1:8080"
+            ?? "https://vps-03f913ed.vps.ovh.net"
         return URL(string: raw)!
     }
 

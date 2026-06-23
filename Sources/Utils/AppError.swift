@@ -7,6 +7,7 @@ enum AppError: LocalizedError, Equatable {
     case network(String)
     case decoding(String)
     case photoProcessingFailed
+    case paymentFailed
     case unknown
 
     var errorDescription: String? {
@@ -21,6 +22,8 @@ enum AppError: LocalizedError, Equatable {
             return "Données illisibles reçues du serveur."
         case .photoProcessingFailed:
             return "Le traitement de confidentialité de la photo a échoué."
+        case .paymentFailed:
+            return "Le paiement n'a pas abouti. Aucune annonce n'a été publiée."
         case .unknown:
             return "Une erreur inattendue est survenue."
         }

@@ -13,6 +13,11 @@ export const config = {
   dataTourismeApiKey: process.env.DATATOURISME_API_KEY ?? "",
   photosDir: process.env.PHOTOS_DIR ?? "./data/photos",
   corsOrigin: process.env.CORS_ORIGIN ?? "*",
+  // Stripe : publication d'une annonce = 5,00 € (500 centimes).
+  stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
+  stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY ?? "",
+  listingPriceCents: 500,
+  listingCurrency: "eur",
   get jwtSecretChecked() {
     return required("JWT_SECRET");
   },

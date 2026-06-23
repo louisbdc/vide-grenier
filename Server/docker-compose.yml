@@ -23,6 +23,8 @@ services:
       MONGO_URL: mongodb://mongo:27017/videgrenier?replicaSet=rs0
       JWT_SECRET: ${JWT_SECRET}
       DATATOURISME_API_KEY: ${DATATOURISME_API_KEY}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
       PHOTOS_DIR: /data/photos
       CORS_ORIGIN: ${CORS_ORIGIN:-*}
     volumes:

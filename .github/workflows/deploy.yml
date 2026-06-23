@@ -21,7 +21,7 @@ jobs:
           host: 152.228.136.49
           username: ubuntu
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: JWT_SECRET,DATATOURISME_API_KEY
+          envs: JWT_SECRET,DATATOURISME_API_KEY,STRIPE_SECRET_KEY,STRIPE_PUBLISHABLE_KEY
           script: |
             set -e
             if [ ! -d ~/vide-grenier ]; then
@@ -29,10 +29,12 @@ jobs:
             fi
             cd ~/vide-grenier && git fetch origin main && git reset --hard origin/main
             cd Server
-            printf 'PORT=8080\nMONGO_URL=mongodb://mongo:27017/videgrenier?replicaSet=rs0\nJWT_SECRET=%s\nDATATOURISME_API_KEY=%s\nPHOTOS_DIR=/data/photos\nCORS_ORIGIN=*\n' \
-              "$JWT_SECRET" "$DATATOURISME_API_KEY" > .env
+            printf 'PORT=8080\nMONGO_URL=mongodb://mongo:27017/videgrenier?replicaSet=rs0\nJWT_SECRET=%s\nDATATOURISME_API_KEY=%s\nSTRIPE_SECRET_KEY=%s\nSTRIPE_PUBLISHABLE_KEY=%s\nPHOTOS_DIR=/data/photos\nCORS_ORIGIN=*\n' \
+              "$JWT_SECRET" "$DATATOURISME_API_KEY" "$STRIPE_SECRET_KEY" "$STRIPE_PUBLISHABLE_KEY" > .env
             docker compose up -d --build
             docker image prune -f
         env:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           DATATOURISME_API_KEY: ${{ secrets.DATATOURISME_API_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}

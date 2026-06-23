@@ -22,6 +22,8 @@ final class CreateEventViewModel: ObservableObject {
         return true
     }
 
+    /// Publication payante : crée le PaymentIntent (5 €), présente le Payment
+    /// Sheet Stripe, puis publie l'annonce seulement si le paiement réussit.
     func save(center: CLLocationCoordinate2D, uid: String?) async -> Bool {
         guard let uid else { error = .notAuthenticated; return false }
         guard isValid else { return false }
@@ -30,6 +32,22 @@ final class CreateEventViewModel: ObservableObject {
         error = nil
         defer { isSaving = false }
         do {
+            let intent = try await service.createIntent()
+            let outcome = await PaymentService.payListing(
+                clientSecret: intent.clientSecret,
+                publishableKey: intent.publishableKey
+            )
+            switch outcome {
+            case .canceled:
+                return false               // annulation : pas d'erreur affichée
+            case .failed:
+                error = .paymentFailed
+                return false
+            case .success:
+                break
+            }
+
+            let paymentIntentId = String(intent.clientSecret.components(separatedBy: "_secret_").first ?? "")
             _ = try await service.create(
                 name: name.trimmingCharacters(in: .whitespacesAndNewlines),
                 kind: kind,
@@ -38,6 +56,7 @@ final class CreateEventViewModel: ObservableObject {
                 latitude: center.latitude,
                 longitude: center.longitude,
                 address: nil,
+                paymentIntentId: paymentIntentId,
                 uid: uid
             )
             return true

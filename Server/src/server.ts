@@ -14,6 +14,7 @@ import authRoutes from "./routes/auth.js";
 import eventRoutes from "./routes/events.js";
 import contributionRoutes from "./routes/contributions.js";
 import photoRoutes from "./routes/photos.js";
+import paymentRoutes from "./routes/payments.js";
 
 async function main(): Promise<void> {
   await connect();
@@ -31,6 +32,7 @@ async function main(): Promise<void> {
   await app.register(eventRoutes);
   await app.register(contributionRoutes);
   await app.register(photoRoutes);
+  await app.register(paymentRoutes);
 
   // Canal temps réel : l'app s'abonne à une zone et reçoit les mises à jour.
   app.register(async (instance) => {

@@ -62,7 +62,7 @@ struct CreateEventSheet: View {
                     Button("Annuler") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Publier") { Task { await publish() } }
+                    Button("Publier · 5 €") { Task { await publish() } }
                         .fontWeight(.bold)
                         .disabled(!viewModel.isValid || viewModel.isSaving)
                 }

@@ -1,0 +1,5 @@
+# HTTPS automatique (Let's Encrypt) sur le hostname OVH gratuit du VPS.
+# Caddy obtient et renouvelle le certificat tout seul — aucun domaine à acheter.
+vps-03f913ed.vps.ovh.net {
+    reverse_proxy api:8080
+}

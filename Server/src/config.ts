@@ -1,0 +1,19 @@
+/// Configuration lue depuis l'environnement, validée au démarrage.
+function required(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`Variable d'environnement manquante : ${name}`);
+  return value;
+}
+
+export const config = {
+  port: Number(process.env.PORT ?? 8080),
+  mongoUrl: process.env.MONGO_URL ?? "mongodb://127.0.0.1:27017/videgrenier?replicaSet=rs0",
+  dbName: "videgrenier",
+  jwtSecret: process.env.JWT_SECRET ?? "dev-insecure-secret-change-me",
+  dataTourismeApiKey: process.env.DATATOURISME_API_KEY ?? "",
+  photosDir: process.env.PHOTOS_DIR ?? "./data/photos",
+  corsOrigin: process.env.CORS_ORIGIN ?? "*",
+  get jwtSecretChecked() {
+    return required("JWT_SECRET");
+  },
+};

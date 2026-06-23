@@ -1,0 +1,50 @@
+# Déploiement VPS : MongoDB (replica set mono-nœud pour les Change Streams)
+# + API + Caddy (HTTPS automatique via Let's Encrypt sur le hostname OVH gratuit).
+services:
+  mongo:
+    image: mongo:7
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: >
+        mongosh --quiet --eval "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}).ok }"
+      interval: 10s
+      start_period: 20s
+      retries: 10
+
+  api:
+    build: .
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      PORT: 8080
+      MONGO_URL: mongodb://mongo:27017/videgrenier?replicaSet=rs0
+      JWT_SECRET: ${JWT_SECRET}
+      DATATOURISME_API_KEY: ${DATATOURISME_API_KEY}
+      PHOTOS_DIR: /data/photos
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+    volumes:
+      - photos_data:/data/photos
+    expose:
+      - "8080"          # accessible uniquement par Caddy (pas exposé publiquement)
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    depends_on: [api]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+  photos_data:
+  caddy_data:
+  caddy_config:

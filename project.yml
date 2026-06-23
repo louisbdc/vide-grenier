@@ -1,0 +1,28 @@
+name: VideGrenier
+options:
+  bundleIdPrefix: com.vide-grenier
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.10"
+    DEVELOPMENT_TEAM: "ZDJ57KYYH2" # FAITES PART EN LIGNE (Company). Alt. perso : WMB5J7765U
+    GENERATE_INFOPLIST_FILE: NO
+
+targets:
+  VideGrenier:
+    type: application
+    platform: iOS
+    sources:
+      - App
+      - Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vide-grenier.app
+        INFOPLIST_FILE: App/Info.plist
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

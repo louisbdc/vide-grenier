@@ -1,0 +1,24 @@
+# Xcode / generated
+*.xcodeproj
+*.xcworkspace
+DerivedData/
+.build/
+xcuserdata/
+
+# Firebase secrets / config
+App/GoogleService-Info.plist
+.firebase/
+Backend/functions/lib/
+Backend/functions/node_modules/
+Backend/functions/.secret.local
+**/.env
+**/.env.local
+**/.DS_Store
+
+# Node
+node_modules/
+
+# Build artifacts
+build/
+Server/dist/
+Server/data/

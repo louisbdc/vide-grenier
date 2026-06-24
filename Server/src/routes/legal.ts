@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 
-const CONTACT = "contact@vide-grenier.app"; // ← remplace par ton e-mail de support réel
+const CONTACT = "louis.decaumont@icloud.com"; // e-mail de support
 
 function page(title: string, body: string): string {
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8">

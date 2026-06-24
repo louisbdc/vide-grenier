@@ -162,6 +162,7 @@ struct EventDetailSheet: View {
                 .frame(width: 34, height: 34)
                 .glassEffect(.regular.interactive(), in: .circle)
         }
+        .accessibilityLabel("Fermer")
         .padding(16)
     }
 

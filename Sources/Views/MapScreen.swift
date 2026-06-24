@@ -13,11 +13,12 @@ struct MapScreen: View {
     @State private var selectedEvent: SaleEvent?
     @State private var showCreate = false
     @State private var showParcours = false
+    @Namespace private var mapScope
 
     private let fallbackCenter = CLLocationCoordinate2D(latitude: 48.8566, longitude: 2.3522)
 
     var body: some View {
-        Map(position: $viewModel.cameraPosition) {
+        Map(position: $viewModel.cameraPosition, scope: mapScope) {
             UserAnnotation()
             ForEach(viewModel.annotationItems) { item in
                 if let event = item.single {
@@ -33,17 +34,22 @@ struct MapScreen: View {
                 }
             }
         }
-        .mapControls {
-            MapUserLocationButton()
-            MapCompass()
-        }
+        .mapControlVisibility(.hidden)
         .onMapCameraChange(frequency: .onEnd) { context in
             viewModel.visibleRegion = context.region
         }
         .overlay { statusOverlay }
         .overlay(alignment: .top) { topBar }
+        // Boussole native (n'apparaît qu'en rotation), à gauche pour ne pas
+        // chevaucher la barre de recherche ni les boutons d'action de droite.
+        .overlay(alignment: .topLeading) {
+            MapCompass(scope: mapScope)
+                .padding(.leading, 20)
+                .padding(.top, 110)
+        }
         .overlay(alignment: .bottomTrailing) {
             VStack(spacing: 14) {
+                MapUserLocationButton(scope: mapScope)
                 if !parcours.selected.isEmpty { parcoursButton }
                 createButton
             }
@@ -51,6 +57,7 @@ struct MapScreen: View {
             .padding(.bottom, 96)
         }
         .overlay(alignment: .bottom) { RadiusPicker(viewModel: viewModel, center: session.location.coordinate) }
+        .mapScope(mapScope)
         .sheet(isPresented: $showParcours) {
             ParcoursSheet().environmentObject(session).environmentObject(parcours)
         }
@@ -157,6 +164,7 @@ struct MapScreen: View {
                 .glassEffect(allActive ? .regular : .regular.tint(Theme.accent),
                              in: .circle)
         }
+        .accessibilityLabel("Filtrer les types d'événements")
     }
 
     private var createButton: some View {
@@ -169,6 +177,7 @@ struct MapScreen: View {
                 .frame(width: 60, height: 60)
                 .glassEffect(.regular.tint(Theme.accent).interactive(), in: .circle)
         }
+        .accessibilityLabel("Créer un événement")
     }
 
     private var parcoursButton: some View {
@@ -190,6 +199,8 @@ struct MapScreen: View {
                     .offset(x: 4, y: -4)
             }
         }
+        .accessibilityLabel("Mon parcours")
+        .accessibilityValue("\(parcours.selected.count) arrêts")
     }
 
     // MARK: - États (chargement / vide / localisation)

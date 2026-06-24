@@ -43,6 +43,8 @@ struct OnboardingView: View {
                 .indexViewStyle(.page(backgroundDisplayMode: .always))
 
                 Button {
+                    // espace réservé ci-dessous via .padding(.top) pour
+                    // dégager les pastilles d'index du bouton.
                     if page < pages.count - 1 { withAnimation { page += 1 } } else { onFinish() }
                 } label: {
                     Text(page < pages.count - 1 ? "Continuer" : "Commencer la chine")
@@ -54,6 +56,7 @@ struct OnboardingView: View {
                 .tint(.white)
                 .foregroundStyle(Theme.terracotta)
                 .padding(.horizontal, 32)
+                .padding(.top, 12)
                 .padding(.bottom, 40)
             }
         }

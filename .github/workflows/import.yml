@@ -1,0 +1,22 @@
+name: Run DATAtourisme import
+
+# Import manuel des événements DATAtourisme sur le VPS (reclasse aussi les
+# fiches existantes via $set kind). À lancer après un changement de mapping.
+on:
+  workflow_dispatch:
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run import over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: 152.228.136.49
+          username: ubuntu
+          key: ${{ secrets.VPS_SSH_KEY }}
+          command_timeout: "20m"
+          script: |
+            set -e
+            cd ~/vide-grenier/Server
+            docker compose exec -T api node dist/scripts/runImport.js

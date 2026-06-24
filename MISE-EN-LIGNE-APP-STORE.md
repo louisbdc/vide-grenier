@@ -5,7 +5,7 @@ spécifique à ton app est déjà rempli (Bundle ID, équipe, URLs).
 
 **Infos clés de ton projet :**
 - Bundle ID : `com.vide-grenier.app`
-- Équipe de signature : **FAITES PART EN LIGNE** (`ZDJ57KYYH2`)
+- Équipe de signature : **Louis de Caumont** — `WMB5J7765U` (Apple Developer Program, Individual)
 - Backend (déjà en ligne) : `https://vps-03f913ed.vps.ovh.net`
 - Confidentialité : `https://vps-03f913ed.vps.ovh.net/privacy`
 - CGU : `https://vps-03f913ed.vps.ovh.net/terms`
@@ -46,14 +46,17 @@ C'est l'étape qui te bloquait : sans ça, ton app n'apparaît pas dans App Stor
 
 ---
 
-## Partie 2 — Déclarer ton statut professionnel (UE / DSA)
+## Partie 2 — Déclarer ton statut « trader » (UE / DSA)
 
-Obligatoire, sinon l'app ne peut pas être distribuée en Europe.
+Obligatoire, sinon l'app ne peut pas être distribuée en Europe. Comme tu factures
+la publication d'annonces (5 €), tu es considéré comme **trader** même en compte
+**Individual**.
 
 1. Va sur <https://appstoreconnect.apple.com>
 2. Menu **Business** (barre du haut)
-3. Section **Trader Status** → renseigne les informations de la société
-   **FAITES PART EN LIGNE** (raison sociale, adresse, e-mail, téléphone).
+3. Section **Trader Status** → renseigne tes informations **personnelles**
+   (nom, adresse — 6 Allée Du Ruisseau De Ribbes, Tassin La Demi Lune —,
+   e-mail, téléphone), puisque le compte est à ton nom (Individual).
 4. Enregistre. (La vérification peut prendre quelques heures.)
 
 ---
@@ -101,8 +104,12 @@ open VideGrenier.xcodeproj
 1. Dans Xcode, sélectionne le projet **VideGrenier** (panneau de gauche) → target **VideGrenier**
 2. Onglet **Signing & Capabilities**
 3. ☑️ **Automatically manage signing**
-4. **Team** : **FAITES PART EN LIGNE**
+4. **Team** : **Louis de Caumont** *(le compte payant Individual, Team ID `WMB5J7765U`
+   — PAS « Personal Team » s'il apparaît en double, ni la société)*
 5. Vérifie que **Bundle Identifier** = `com.vide-grenier.app`
+
+> Si l'équipe n'apparaît pas : Xcode → **Settings → Accounts** → ajoute ton Apple
+> ID payant, puis reviens ici.
 
 ### 5.3 Régler la version
 - Onglet **General** → **Version** : `1.0`, **Build** : `1`

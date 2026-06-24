@@ -1,6 +1,6 @@
 import { EventDoc, EventKind } from "./types.js";
 import { classifyKind } from "./mapper.js";
-import { upsertEvents } from "./ingest.js";
+import { upsertEvents, cleanRichText } from "./ingest.js";
 
 // Miroir public Opendatasoft de l'agrégat OpenAgenda (Licence Ouverte, sans clé) —
 // API Explore v2.1. C'est là que les associations et mairies de villages publient
@@ -40,13 +40,6 @@ interface OARecord {
   location_city?: string;
 }
 
-/// Nettoie un texte source : espaces normalisés, borné à une longueur lisible.
-function cleanDescription(s: string | undefined): string | null {
-  if (!s) return null;
-  const text = s.replace(/\s+/g, " ").trim();
-  if (!text) return null;
-  return text.length > 600 ? `${text.slice(0, 597)}…` : text;
-}
 
 interface OAResponse {
   total_count?: number;
@@ -89,7 +82,7 @@ function mapRecord(r: OARecord): EventDoc | null {
     startsAt,
     endsAt: parseDate(r.lastdate_end),
     address: buildAddress(r),
-    description: cleanDescription(r.longdescription_fr ?? r.description_fr),
+    description: cleanRichText(r.longdescription_fr ?? r.description_fr),
     imageUrl: r.image ?? r.originalimage ?? r.thumbnail ?? null,
     recurrenceDays: [],
     source: "openAgenda",

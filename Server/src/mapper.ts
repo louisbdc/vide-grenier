@@ -1,4 +1,5 @@
 import { EventDoc, EventKind } from "./types.js";
+import { cleanRichText } from "./ingest.js";
 
 // Objet renvoyé par l'API REST DATAtourisme v1 (/entertainmentAndEvent).
 export interface DataTourismeObject {
@@ -106,19 +107,37 @@ function firstOf(value: unknown): unknown {
 function extractDescription(obj: DataTourismeObject): string | null {
   const desc = firstOf(obj.hasDescription) as Record<string, unknown> | undefined;
   if (!desc) return null;
-  const text = pickText(desc.shortDescription) ?? pickText(desc.longDescription);
-  if (!text) return null;
-  const clean = text.replace(/\s+/g, " ").trim();
-  return clean.length > 600 ? `${clean.slice(0, 597)}…` : clean;
+  return cleanRichText(pickText(desc.shortDescription) ?? pickText(desc.longDescription));
 }
 
-/// Image : `hasMainRepresentation[0].ebucore:hasRelatedResource[0].ebucore:locator`.
+/// Image : la structure exacte de `hasMainRepresentation` varie selon les
+/// producteurs (préfixes ebucore:, imbrication). On cherche donc récursivement
+/// la première URL d'image dans le sous-arbre, ce qui est robuste au schéma.
 function extractImageUrl(obj: DataTourismeObject): string | null {
-  const rep = firstOf(obj.hasMainRepresentation) as Record<string, unknown> | undefined;
-  if (!rep) return null;
-  const resource = firstOf(rep["ebucore:hasRelatedResource"]) as Record<string, unknown> | undefined;
-  const locator = pickText(resource?.["ebucore:locator"]);
-  return locator && /^https?:\/\//.test(locator) ? locator : null;
+  return deepFindImageUrl(obj.hasMainRepresentation, 0);
+}
+
+function deepFindImageUrl(value: unknown, depth: number): string | null {
+  if (depth > 6 || value == null) return null;
+  if (typeof value === "string") {
+    return /^https?:\/\/\S+\.(jpe?g|png|webp|gif)/i.test(value) || /^https?:\/\//.test(value)
+      ? value
+      : null;
+  }
+  if (Array.isArray(value)) {
+    for (const v of value) {
+      const found = deepFindImageUrl(v, depth + 1);
+      if (found) return found;
+    }
+    return null;
+  }
+  if (typeof value === "object") {
+    for (const v of Object.values(value as Record<string, unknown>)) {
+      const found = deepFindImageUrl(v, depth + 1);
+      if (found) return found;
+    }
+  }
+  return null;
 }
 
 function combine(date?: string, time?: string): Date | null {

@@ -36,6 +36,27 @@ export async function upsertEvents(events: EventDoc[]): Promise<number> {
   return result.upsertedCount + result.modifiedCount;
 }
 
+/// Nettoie un texte de présentation issu d'une source : retire le HTML et le
+/// markdown, décode les entités courantes, normalise les espaces, borne la
+/// longueur pour un affichage lisible.
+export function cleanRichText(input: string | null | undefined, maxLength = 600): string | null {
+  if (!input) return null;
+  let text = input
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<\/(p|div|li|h[1-6])>/gi, " ")
+    .replace(/<[^>]+>/g, " ")                 // balises HTML
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<").replace(/&gt;/gi, ">")
+    .replace(/&#39;|&apos;/gi, "'").replace(/&quot;/gi, '"')
+    .replace(/[*_`#>]+/g, " ")                // markdown
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!text) return null;
+  if (text.length > maxLength) text = `${text.slice(0, maxLength - 1)}…`;
+  return text;
+}
+
 /// Filtre les événements expirés : on garde ceux qui se terminent (ou démarrent,
 /// à défaut de date de fin) après le seuil donné (par défaut : il y a 24 h).
 export function keepUpcoming(events: EventDoc[], cutoff = Date.now() - 24 * 3600 * 1000): EventDoc[] {

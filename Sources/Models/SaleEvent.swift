@@ -25,6 +25,7 @@ enum SaleEventKind: String, Codable, CaseIterable, Sendable {
 /// Provenance de la fiche : open data institutionnel ou créée dans l'app.
 enum SaleEventSource: String, Codable, Sendable {
     case dataTourisme
+    case openAgenda
     case crowdsourced
 }
 

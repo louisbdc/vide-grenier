@@ -3,7 +3,7 @@
 export type EventKind =
   | "videGrenier" | "brocante" | "marcheAuxPuces" | "braderie" | "marche" | "autre";
 
-export type EventSource = "dataTourisme" | "crowdsourced";
+export type EventSource = "dataTourisme" | "openAgenda" | "crowdsourced";
 
 export type LiveStatus =
   | "scheduled" | "ongoing" | "crowded" | "deserted" | "emptied" | "cancelled";

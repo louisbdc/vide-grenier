@@ -24,7 +24,7 @@ export interface DataTourismeObject {
 }
 
 /// Normalise une chaîne pour la classification : minuscules, sans accents.
-function normalize(s: string): string {
+export function normalize(s: string): string {
   return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 }
 
@@ -35,7 +35,7 @@ function normalize(s: string): string {
 /// des marchés alimentaires (`Market`) et des salons/foires (`FairOrShow`,
 /// `OpenDay`, `BusinessEvent`). On classe d'abord par ce `@type` (autoritatif),
 /// puis par mots-clés du nom en repli, puis « autre ».
-function classifyKind(types: string[] | undefined, name: string): EventKind {
+export function classifyKind(types: string[] | undefined, name: string): EventKind {
   const typeStr = normalize((types ?? []).join(" "));
   const nameStr = normalize(name);
 

@@ -10,6 +10,7 @@ import { config } from "./config.js";
 import { connect } from "./db.js";
 import { watchEvents, addSubscriber } from "./realtime.js";
 import { runImport } from "./datatourisme.js";
+import { runOpenAgendaImport } from "./openagenda.js";
 import authRoutes from "./routes/auth.js";
 import eventRoutes from "./routes/events.js";
 import contributionRoutes from "./routes/contributions.js";
@@ -55,17 +56,24 @@ async function main(): Promise<void> {
   // Surveillance des changements MongoDB → push WebSocket.
   watchEvents();
 
-  // Import DATAtourisme quotidien (4 h du matin).
-  if (config.dataTourismeApiKey) {
-    cron.schedule("0 4 * * *", async () => {
+  // Imports open data quotidiens (4 h du matin) : DATAtourisme (marchés, offices
+  // de tourisme) + OpenAgenda (vide-greniers de villages, sans clé).
+  cron.schedule("0 4 * * *", async () => {
+    if (config.dataTourismeApiKey) {
       try {
         const result = await runImport(config.dataTourismeApiKey);
         app.log.info(`Import DATAtourisme : ${JSON.stringify(result)}`);
       } catch (error) {
         app.log.error(error, "Import DATAtourisme échoué");
       }
-    });
-  }
+    }
+    try {
+      const result = await runOpenAgendaImport();
+      app.log.info(`Import OpenAgenda : ${JSON.stringify(result)}`);
+    } catch (error) {
+      app.log.error(error, "Import OpenAgenda échoué");
+    }
+  });
 
   await app.listen({ port: config.port, host: "0.0.0.0" });
 }

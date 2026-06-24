@@ -25,6 +25,8 @@ export interface EventDoc {
   startsAt: Date;
   endsAt: Date | null;
   address: string | null;
+  description: string | null;   // texte de présentation issu de la source
+  imageUrl: string | null;      // photo/affiche issue de la source (cold-start)
   recurrenceDays: string[];
   source: EventSource;
   ownerUid: string | null;

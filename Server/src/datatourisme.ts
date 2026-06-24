@@ -5,7 +5,9 @@ import { upsertEvents, keepUpcoming } from "./ingest.js";
 const API_BASE = "https://api.datatourisme.fr/v1";
 const PAGE_SIZE = 250;
 const MAX_PAGES = 200;
-const FIELDS = "uuid,uri,label,type,isLocatedAt.geo,isLocatedAt.address,takesPlaceAt";
+const FIELDS =
+  "uuid,uri,label,type,isLocatedAt.geo,isLocatedAt.address,takesPlaceAt," +
+  "hasDescription,hasMainRepresentation";
 
 interface ApiResponse {
   objects?: DataTourismeObject[];

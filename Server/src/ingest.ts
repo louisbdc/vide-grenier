@@ -18,6 +18,7 @@ export async function upsertEvents(events: EventDoc[]): Promise<number> {
         $set: {
           name: e.name, kind: e.kind, location: e.location,
           startsAt: e.startsAt, endsAt: e.endsAt, address: e.address,
+          description: e.description, imageUrl: e.imageUrl,
           recurrenceDays: e.recurrenceDays, source: e.source, updatedAt: new Date(),
         },
         $setOnInsert: {

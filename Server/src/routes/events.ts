@@ -90,6 +90,8 @@ export default async function eventRoutes(fastify: FastifyInstance): Promise<voi
       startsAt,
       endsAt,
       address: b.address ? String(b.address) : null,
+      description: null,
+      imageUrl: null,
       recurrenceDays: [],
       source: "crowdsourced",
       ownerUid: uid,

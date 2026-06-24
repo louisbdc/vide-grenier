@@ -27,12 +27,25 @@ interface OARecord {
   uid?: string | number;
   title_fr?: string;
   title?: string;
+  description_fr?: string;
+  longdescription_fr?: string;
+  image?: string;
+  originalimage?: string;
+  thumbnail?: string;
   location_coordinates?: { lon?: number; lat?: number };
   firstdate_begin?: string;
   lastdate_end?: string;
   location_address?: string;
   location_postalcode?: string;
   location_city?: string;
+}
+
+/// Nettoie un texte source : espaces normalisés, borné à une longueur lisible.
+function cleanDescription(s: string | undefined): string | null {
+  if (!s) return null;
+  const text = s.replace(/\s+/g, " ").trim();
+  if (!text) return null;
+  return text.length > 600 ? `${text.slice(0, 597)}…` : text;
 }
 
 interface OAResponse {
@@ -76,6 +89,8 @@ function mapRecord(r: OARecord): EventDoc | null {
     startsAt,
     endsAt: parseDate(r.lastdate_end),
     address: buildAddress(r),
+    description: cleanDescription(r.longdescription_fr ?? r.description_fr),
+    imageUrl: r.image ?? r.originalimage ?? r.thumbnail ?? null,
     recurrenceDays: [],
     source: "openAgenda",
     ownerUid: null,

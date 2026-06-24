@@ -42,6 +42,8 @@ struct SaleEvent: Identifiable, Decodable, Equatable, Sendable {
     let startsAt: Date
     let endsAt: Date?
     let address: String?
+    let description: String?
+    let imageUrl: String?
     let recurrenceDays: [String]
     let source: SaleEventSource
     let liveStatus: EventLiveStatus
@@ -55,7 +57,8 @@ struct SaleEvent: Identifiable, Decodable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case id, name, kind, latitude, longitude, startsAt, endsAt
-        case address, recurrenceDays, source, liveStatus, topTags, photoCount, authorId
+        case address, description, imageUrl, recurrenceDays
+        case source, liveStatus, topTags, photoCount, authorId
     }
 
     init(from decoder: Decoder) throws {
@@ -68,6 +71,8 @@ struct SaleEvent: Identifiable, Decodable, Equatable, Sendable {
         startsAt = try c.decode(Date.self, forKey: .startsAt)
         endsAt = try c.decodeIfPresent(Date.self, forKey: .endsAt)
         address = try c.decodeIfPresent(String.self, forKey: .address)
+        description = try? c.decodeIfPresent(String.self, forKey: .description)
+        imageUrl = try? c.decodeIfPresent(String.self, forKey: .imageUrl)
         recurrenceDays = (try? c.decode([String].self, forKey: .recurrenceDays)) ?? []
         source = SaleEventSource(rawValue: (try? c.decode(String.self, forKey: .source)) ?? "") ?? .crowdsourced
         liveStatus = EventLiveStatus(rawValue: (try? c.decode(String.self, forKey: .liveStatus)) ?? "") ?? .scheduled

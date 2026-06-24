@@ -10,6 +10,8 @@ export interface EventJSON {
   startsAt: string;
   endsAt: string | null;
   address: string | null;
+  description: string | null;
+  imageUrl: string | null;
   recurrenceDays: string[];
   source: string;
   liveStatus: string;
@@ -29,6 +31,8 @@ export function serializeEvent(doc: EventDoc): EventJSON {
     startsAt: doc.startsAt.toISOString(),
     endsAt: doc.endsAt ? doc.endsAt.toISOString() : null,
     address: doc.address,
+    description: doc.description ?? null,
+    imageUrl: doc.imageUrl ?? null,
     recurrenceDays: doc.recurrenceDays,
     source: doc.source,
     liveStatus: doc.liveStatus,

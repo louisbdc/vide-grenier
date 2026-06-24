@@ -18,6 +18,15 @@ struct EventDetailSheet: View {
                 hero
 
                 VStack(alignment: .leading, spacing: 22) {
+                    if let description = event.description, !description.isEmpty {
+                        section("À propos") {
+                            Text(description)
+                                .font(.subheadline)
+                                .foregroundStyle(Theme.ink.opacity(0.8))
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+
                     LookAroundPreviewView(coordinate: event.coordinate)
                         .frame(height: 175)
                         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
@@ -62,10 +71,7 @@ struct EventDetailSheet: View {
 
     private var hero: some View {
         ZStack(alignment: .bottomLeading) {
-            LinearGradient(
-                colors: [event.kind.color, event.kind.color.opacity(0.78)],
-                startPoint: .topLeading, endPoint: .bottomTrailing
-            )
+            heroBackground
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     Text(event.kind.label.uppercased())
@@ -96,6 +102,31 @@ struct EventDetailSheet: View {
             .padding(.top, 24)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .clipped()
+    }
+
+    /// Fond du hero : photo de la source (assombrie pour la lisibilité du texte)
+    /// si disponible, sinon dégradé coloré selon le type — évite la fiche vide.
+    @ViewBuilder private var heroBackground: some View {
+        let gradient = LinearGradient(
+            colors: [event.kind.color, event.kind.color.opacity(0.78)],
+            startPoint: .topLeading, endPoint: .bottomTrailing
+        )
+        if let imageUrl = event.imageUrl, let url = URL(string: imageUrl) {
+            AsyncImage(url: url) { phase in
+                if let image = phase.image {
+                    image.resizable().scaledToFill()
+                } else {
+                    gradient
+                }
+            }
+            .overlay(
+                LinearGradient(colors: [.black.opacity(0.15), .black.opacity(0.65)],
+                               startPoint: .top, endPoint: .bottom)
+            )
+        } else {
+            gradient
+        }
     }
 
     private var itineraryButton: some View {

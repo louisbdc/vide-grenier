@@ -21,6 +21,10 @@ export interface DataTourismeObject {
     endTime?: string;
     appliesOnDay?: Array<{ key?: string }>;
   }>;
+  // Structures imbriquées et variables selon les producteurs : typées en `unknown`
+  // et explorées défensivement (cf. extractDescription / extractImageUrl).
+  hasDescription?: unknown;
+  hasMainRepresentation?: unknown;
 }
 
 /// Normalise une chaîne pour la classification : minuscules, sans accents.
@@ -76,6 +80,47 @@ function buildAddress(obj: DataTourismeObject): string | null {
   return parts.length ? parts.join(", ") : null;
 }
 
+/// Extrait une valeur texte FR d'un champ DATAtourisme polymorphe :
+/// string, string[], ou map de langue ({ "@fr": ... } / { fr: ... }).
+function pickText(value: unknown): string | null {
+  if (typeof value === "string") return value.trim() || null;
+  if (Array.isArray(value)) {
+    for (const v of value) {
+      const t = pickText(v);
+      if (t) return t;
+    }
+    return null;
+  }
+  if (value && typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    return pickText(obj["@fr"] ?? obj.fr ?? obj["@en"] ?? obj.en ?? Object.values(obj)[0]);
+  }
+  return null;
+}
+
+function firstOf(value: unknown): unknown {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+/// Description : `hasDescription[0].shortDescription` (repli longDescription).
+function extractDescription(obj: DataTourismeObject): string | null {
+  const desc = firstOf(obj.hasDescription) as Record<string, unknown> | undefined;
+  if (!desc) return null;
+  const text = pickText(desc.shortDescription) ?? pickText(desc.longDescription);
+  if (!text) return null;
+  const clean = text.replace(/\s+/g, " ").trim();
+  return clean.length > 600 ? `${clean.slice(0, 597)}…` : clean;
+}
+
+/// Image : `hasMainRepresentation[0].ebucore:hasRelatedResource[0].ebucore:locator`.
+function extractImageUrl(obj: DataTourismeObject): string | null {
+  const rep = firstOf(obj.hasMainRepresentation) as Record<string, unknown> | undefined;
+  if (!rep) return null;
+  const resource = firstOf(rep["ebucore:hasRelatedResource"]) as Record<string, unknown> | undefined;
+  const locator = pickText(resource?.["ebucore:locator"]);
+  return locator && /^https?:\/\//.test(locator) ? locator : null;
+}
+
 function combine(date?: string, time?: string): Date | null {
   if (!date) return null;
   const d = new Date(time ? `${date}T${time}:00` : `${date}T00:00:00`);
@@ -106,6 +151,8 @@ export function mapObject(obj: DataTourismeObject): EventDoc | null {
     startsAt,
     endsAt: combine(slot?.endDate, slot?.endTime),
     address: buildAddress(obj),
+    description: extractDescription(obj),
+    imageUrl: extractImageUrl(obj),
     recurrenceDays: (slot?.appliesOnDay ?? [])
       .map((d) => d.key)
       .filter((k): k is string => typeof k === "string"),

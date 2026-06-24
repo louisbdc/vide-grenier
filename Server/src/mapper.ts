@@ -42,8 +42,10 @@ function classifyKind(types: string[] | undefined, name: string): EventKind {
   // 1. Sous-classes DATAtourisme (signal officiel le plus fiable).
   if (/garagesale/.test(typeStr)) return "videGrenier";
   if (/bricabrac/.test(typeStr)) {
-    // BricABrac couvre brocantes ET marchés aux puces : on affine au nom.
-    return /puces/.test(nameStr) ? "marcheAuxPuces" : "brocante";
+    // BricABrac couvre vide-greniers, brocantes ET puces : on affine au nom.
+    if (/vide[- ]?grenier|videgrenier/.test(nameStr)) return "videGrenier";
+    if (/puces/.test(nameStr)) return "marcheAuxPuces";
+    return "brocante";
   }
   if (/\bmarket\b/.test(typeStr)) return "marche";
   if (/fairorshow|openday|businessevent/.test(typeStr)) return "autre";

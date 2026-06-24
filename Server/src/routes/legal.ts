@@ -8,7 +8,7 @@ function page(title: string, body: string): string {
 <style>body{font-family:-apple-system,system-ui,sans-serif;max-width:720px;margin:40px auto;
 padding:0 20px;color:#2a221e;line-height:1.6}h1{color:#c9543d}h2{margin-top:28px}
 small{color:#888}</style></head><body>${body}
-<hr><small>Vide-Grenier — édité par FAITES PART EN LIGNE. Contact : ${CONTACT}</small>
+<hr><small>Vide-Grenier — édité par Louis de Caumont. Contact : ${CONTACT}</small>
 </body></html>`;
 }
 
@@ -16,7 +16,7 @@ export default async function legalRoutes(fastify: FastifyInstance): Promise<voi
   fastify.get("/privacy", async (_req, reply) => {
     reply.type("text/html").send(page("Politique de confidentialité", `
 <h1>Politique de confidentialité</h1>
-<p>L'application Vide-Grenier (éditée par <strong>FAITES PART EN LIGNE</strong>) respecte ta vie privée. Voici les données traitées et pourquoi.</p>
+<p>L'application Vide-Grenier (éditée par <strong>Louis de Caumont</strong>) respecte ta vie privée. Voici les données traitées et pourquoi.</p>
 <h2>Données traitées</h2>
 <ul>
 <li><strong>Localisation</strong> : utilisée pour centrer la carte et rechercher les événements autour de toi. Elle n'est pas conservée sur nos serveurs au-delà de la requête.</li>

@@ -7,6 +7,7 @@ enum SaleEventKind: String, Codable, CaseIterable, Sendable {
     case brocante
     case marcheAuxPuces
     case braderie
+    case marche
     case autre
 
     var label: String {
@@ -15,6 +16,7 @@ enum SaleEventKind: String, Codable, CaseIterable, Sendable {
         case .brocante: return "Brocante"
         case .marcheAuxPuces: return "Marché aux puces"
         case .braderie: return "Braderie"
+        case .marche: return "Marché"
         case .autre: return "Événement"
         }
     }

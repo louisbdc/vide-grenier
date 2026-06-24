@@ -1,7 +1,7 @@
 /// Types partagés du domaine.
 
 export type EventKind =
-  | "videGrenier" | "brocante" | "marcheAuxPuces" | "braderie" | "autre";
+  | "videGrenier" | "brocante" | "marcheAuxPuces" | "braderie" | "marche" | "autre";
 
 export type EventSource = "dataTourisme" | "crowdsourced";
 

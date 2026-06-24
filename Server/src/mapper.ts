@@ -23,12 +23,38 @@ export interface DataTourismeObject {
   }>;
 }
 
-function kindFromTypes(types: string[] | undefined): EventKind {
-  const joined = (types ?? []).join(" ").toLowerCase();
-  if (joined.includes("garagesale") || joined.includes("videgrenier")) return "videGrenier";
-  if (joined.includes("brocante")) return "brocante";
-  if (joined.includes("fleamarket") || joined.includes("puces")) return "marcheAuxPuces";
-  if (joined.includes("braderie")) return "braderie";
+/// Normalise une chaîne pour la classification : minuscules, sans accents.
+function normalize(s: string): string {
+  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
+
+/// Détermine la catégorie d'un événement.
+///
+/// `type=SaleEvent` est une classe parente : ses sous-classes DATAtourisme
+/// distinguent la chine (`GarageSale` = vide-grenier, `BricABrac` = brocante/puces)
+/// des marchés alimentaires (`Market`) et des salons/foires (`FairOrShow`,
+/// `OpenDay`, `BusinessEvent`). On classe d'abord par ce `@type` (autoritatif),
+/// puis par mots-clés du nom en repli, puis « autre ».
+function classifyKind(types: string[] | undefined, name: string): EventKind {
+  const typeStr = normalize((types ?? []).join(" "));
+  const nameStr = normalize(name);
+
+  // 1. Sous-classes DATAtourisme (signal officiel le plus fiable).
+  if (/garagesale/.test(typeStr)) return "videGrenier";
+  if (/bricabrac/.test(typeStr)) {
+    // BricABrac couvre brocantes ET marchés aux puces : on affine au nom.
+    return /puces/.test(nameStr) ? "marcheAuxPuces" : "brocante";
+  }
+  if (/\bmarket\b/.test(typeStr)) return "marche";
+  if (/fairorshow|openday|businessevent/.test(typeStr)) return "autre";
+
+  // 2. Repli par mots-clés du nom (type absent ou générique).
+  //    Ordre = spécificité décroissante (« marche aux puces » avant « marche »).
+  if (/vide[- ]?grenier|videgrenier/.test(nameStr)) return "videGrenier";
+  if (/brocante/.test(nameStr)) return "brocante";
+  if (/puces/.test(nameStr)) return "marcheAuxPuces";
+  if (/braderie/.test(nameStr)) return "braderie";
+  if (/\bmarches?\b|halles?\b|foire/.test(nameStr)) return "marche";
   return "autre";
 }
 
@@ -68,10 +94,12 @@ export function mapObject(obj: DataTourismeObject): EventDoc | null {
   const startsAt = combine(slot?.startDate, slot?.startTime);
   if (!startsAt) return null;
 
+  const name = frLabel(obj.label);
+
   return {
     extId,
-    name: frLabel(obj.label),
-    kind: kindFromTypes(obj.type),
+    name,
+    kind: classifyKind(obj.type, name),
     location: { type: "Point", coordinates: [longitude, latitude] },
     startsAt,
     endsAt: combine(slot?.endDate, slot?.endTime),

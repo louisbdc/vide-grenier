@@ -10,7 +10,10 @@ import Combine
 final class MapViewModel: ObservableObject {
     @Published var radiusKm: Double = 15
     @Published private(set) var events: [SaleEvent] = []
-    @Published var selectedKinds: Set<SaleEventKind> = Set(SaleEventKind.allCases)
+    /// Types affichés par défaut : tout sauf « Événement » (autre), qui regroupe
+    /// le contenu non identifié comme chine (salons, événements divers). L'utilisateur
+    /// peut le réactiver via le menu de filtres.
+    @Published var selectedKinds: Set<SaleEventKind> = Set(SaleEventKind.allCases.filter { $0 != .autre })
     @Published var searchText = ""
     @Published var cameraPosition: MapCameraPosition = .automatic
     @Published private(set) var isLoading = false

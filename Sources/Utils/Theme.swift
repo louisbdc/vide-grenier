@@ -9,6 +9,7 @@ enum Theme {
     static let ochre = Color(red: 0.90, green: 0.64, blue: 0.30)
     static let teal = Color(red: 0.18, green: 0.52, blue: 0.49)
     static let plum = Color(red: 0.52, green: 0.34, blue: 0.52)
+    static let sage = Color(red: 0.45, green: 0.55, blue: 0.32) // marchés
     static let slate = Color(red: 0.42, green: 0.47, blue: 0.53)
     static let ink = Color(red: 0.16, green: 0.13, blue: 0.11)
     static let paper = Color(red: 0.99, green: 0.97, blue: 0.93)
@@ -41,6 +42,7 @@ extension SaleEventKind {
         case .brocante: return Theme.ochre
         case .marcheAuxPuces: return Theme.teal
         case .braderie: return Theme.plum
+        case .marche: return Theme.sage
         case .autre: return Theme.slate
         }
     }
